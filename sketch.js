@@ -1,147 +1,60 @@
-//GameState (ESTADOS DEL JUEGO)
-var PLAY=1;
-var END=0;
-var gameState=1;
+var calle, calleImg;
+var cieloimg;
+var player, playerImg;
+var basura1, basura1img, basura2, basura2img, basura3, basura3img, basura4, basura4img;
+var basura1Group, basura2Group, basura3Group, basura4Group;
+var END = 0;
+var PLAY = 1;
+var gameState = PLAY;
+var distance = 0;
+var gameOver, restart, edges;
 
-var knife,fruit ,monster,fruitGroup,monsterGroup, score,r,randomFruit, position;
-var knifeImage , fruit1, fruit2 ,fruit3,fruit4, monsterImage, gameOverImage;
-var gameOverSound ,knifeSwoosh;
 
-function preload(){
-  
-  knifeImage = loadImage("knife.png");
-  monsterImage = loadAnimation("alien1.png","alien2.png")
-  fruit1 = loadImage("fruit1.png");
-  fruit2 = loadImage("fruit2.png");
-  fruit3 = loadImage("fruit3.png");
-  fruit4 = loadImage("fruit4.png");
-  gameOverImage = loadImage("gameover.png")
-  
-  gameOverSound = loadSound("gameover.mp3")
-  knifeSwooshSound = loadSound("knifeSwoosh.mp3")
+function preload() {
+    cieloimg = loadImage("Cielo.jpg");
+    calleImg = loadImage("Calle.gif");
+    playerImg = loadImage("corredor.gif");
+    basura1img = loadImage("Basura1.png");
+    basura2img = loadImage("Basura2.png");
+    basura3img = loadImage("Basura3.png");
+    basura4img = loadImage("Basura4.png");
 }
-
-
 
 function setup() {
-  createCanvas(600, 600);
-  
-  //crear cuchillo
-   knife=createSprite(40,200,20,20);
-   knife.addImage(knifeImage);
-   knife.scale=0.7
-  
-  
-  
-  //establecer colisionador para el cuchillo
-  knife.setCollider("rectangle",0,0,40,40);
+    createCanvas(500, 500) 
+                    
+    Ecenario calle = createSprite(100, 150);
+    calle.addImage(calleImg);
+    calle.velocityX = -5 player
+    player = createSprite(70, 300);
+    player.addImage(playerImg) player.scale = 0.06
+    Grupos basura1Group = new Group(); basura2Group = new Group(); basura3Group = new Group(); basura4Group = new Group();
 
-  //variables de puntuación y grupos
-  score=0;
-  fruitGroup=createGroup();
-  monsterGroup=createGroup();
-  
 }
 
-function draw() {
-  background("lightblue");
-  
-  if(gameState===PLAY){
+function draw() { //puntuacion 
     
-    //Llamar a las funciones fruits y Monster
-    fruits();
-    Monster();
-    
-    // Mover el cuchillo con el mouse
-    knife.y=World.mouseY;
-    knife.x=World.mouseX;
-  
-    // Aumentar la puntuación si el cuchillo toca la fruta
-    if(fruitGroup.isTouching(knife)){
-      fruitGroup.destroyEach();
-      
-       knifeSwooshSound.play();
-      // knifeSwooshSound.play;
-      // knifeSwooshSound();
-      // knifeSwooshSoundplay();
+    background(cieloimg);
+    drawSprites();
+    textSize(20);
+    fill(225);
+    text("Recorrido: " + distance, 900, 30);
+    if (gameState == PLAY) {
+        distance = distance + Math.round(getFrameRate() / 50);
+        calle.velocityX = (-6 + 2 * distance / 150);
+         player.y = World.mouseY;
+        edges = createEdgeSprites();
+        player.collide(edges);
+              
 
+              if (calle.x < 0) {
+            calle.x = width / 2;
+        }
 
-      // score=score;
-      // score=+2;
-      // score=2;
-       score=score+2;
-
-    }
-    else
-    {
-      // Cambiar al estado end si el cuchillo toca al enemigo
-      if(monsterGroup.isTouching(knife)){
-        gameState=END;
-        //sonido del fin del juego
-        gameOverSound.play()
-        
-        fruitGroup.destroyEach();
-        monsterGroup.destroyEach();
-        fruitGroup.setVelocityXEach(0);
-        monsterGroup.setVelocityXEach(0);
-        
-        // Cambiar la animación del cuchillo en gameover y reiniciar su posición
-        knife.addImage(gameOverImage);
-        knife.scale=2;
-        knife.x=300;
-        knife.y=300;
-      }
-    }
-  }
-  
-  drawSprites();
-  //Mostrar puntuación
-  textSize(25);
-  text("Puntuación : "+ score,250,50);
-}
-
-
-function Monster(){
-  if(World.frameCount%200===0){
-    monster=createSprite(400,200,20,20);
-    monster.addAnimation("moving", monsterImage);
-    monster.y=Math.round(random(100,550));
-    monster.velocityX=-(8+(score/10));
-    monster.setLifetime=50;
-    
-    monsterGroup.add(monster);
-  }
-}
-
-function fruits(){
-  if(World.frameCount%80===0){
-    fruit=createSprite(400,200,20,20);
-    fruit.x = 0    
-  //Aumentar la velocidad de las frutas después de 4 puntos 
-
-       fruit.velocityX= (7+(score/4));
-      // fruit.velocityY= (7+(score));
-      // fruit.velocity= (7+(score/4));
-      // fruit.velocityX= (7);
-     
-    fruit.scale=0.2;
-     //fruit.debug=true;
-     r=Math.round(random(1,4));
-    if (r == 1) {
-      fruit.addImage(fruit1);
-    } else if (r == 2) {
-      fruit.addImage(fruit2);
-    } else if (r == 3) {
-      fruit.addImage(fruit3);
-    } else {
-      fruit.addImage(fruit4);
-    }
-    
-    fruit.y=Math.round(random(50,550));
-   
-    
-    fruit.setLifetime=100;
-    
-    fruitGroup.add(fruit);
-  }
-}
+        //programación de basuras
+        var select_oppPlayer = Math.round(random(1, 3));
+        if (World.frameCount % 150 == 0) {
+            if (select_oppPlayer == 1) { Basura1(); } else if (select_oppPlayer == 2) { Basura2(); } else { Basura3(); }
+        } //Muertes
+        if (basura1Group.isTouching(player)) { 
+            gameState = END; player.velocity;
